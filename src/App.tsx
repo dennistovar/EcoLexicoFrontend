@@ -5,7 +5,6 @@ import { BrowserRouter, Routes, Route, Link, useLocation, Outlet } from 'react-r
 import { HomePage } from './pages/HomePage';
 import { RegionPage } from './pages/RegionPage';
 import { LoginPage } from './pages/LoginPage';
-import { AdminLoginPage } from './pages/AdminLoginPage';
 import { AdminDashboard } from './pages/AdminDashboard';
 import { FavoritesPage } from './pages/FavoritesPage';
 import { GamePage } from './pages/GamePage';
@@ -32,6 +31,7 @@ function App() {
         {/* GRUPO A: Rutas Públicas CON Navbar */}
         <Route element={<PublicLayout />}>
           <Route path="/" element={<HomePage />} />
+          <Route path="/home" element={<HomePage />} />
           <Route path="/region/:regionId" element={<RegionPage />} />
           <Route path="/favorites" element={<FavoritesPage />} />
           <Route path="/game" element={<GamePage />} />
@@ -39,7 +39,6 @@ function App() {
 
         {/* GRUPO B: Rutas SIN Navbar (Login y Admin) */}
         <Route path="/login" element={<LoginPage />} />
-        <Route path="/admin-login" element={<AdminLoginPage />} />
         <Route path="/admin" element={<AdminDashboard />} />
         
         {/* Ruta 404 */}
@@ -75,9 +74,9 @@ function NavbarComponent() {
   const isActive = (path: string) => location.pathname === path;
 
   return (
-    <nav className="bg-white shadow-md sticky top-0 z-50">
+    <nav className="bg-white/95 backdrop-blur-md shadow-lg border-b border-gray-100 sticky top-0 z-50">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="flex justify-between items-center h-16">
+        <div className="flex justify-between items-center h-20">
           
           {/* --- LOGO PERSONALIZADO CON DEGRADADO --- */}
           <Link to="/" className="flex items-center gap-3 group">
@@ -85,30 +84,30 @@ function NavbarComponent() {
             <img 
               src="/img/logo.png" 
               alt="EcoLéxico" 
-              className="w-10 h-10 rounded-lg shadow-md group-hover:shadow-lg transition-shadow object-cover"
+              className="w-12 h-12 rounded-xl shadow-lg group-hover:shadow-xl group-hover:scale-110 transition-all duration-300 object-cover"
             />
             
             {/* Texto del Logo */}
             <div className="flex flex-col">
-              <span className="text-lg font-bold text-gray-800 leading-tight">
+              <span className="text-xl font-black bg-gradient-to-r from-emerald-600 to-teal-600 text-transparent bg-clip-text leading-tight">
                 EcoLéxico
               </span>
-              <span className="text-xs text-gray-500 leading-tight">
+              <span className="text-xs text-gray-500 font-medium leading-tight">
                 Ecuadorian Words
               </span>
             </div>
           </Link>
 
           {/* --- ENLACES DE NAVEGACIÓN (Escritorio) --- */}
-          <div className="hidden md:flex items-center space-x-6">
+          <div className="hidden md:flex items-center space-x-2">
             
             {/* Link: Explore */}
             <Link 
               to="/" 
-              className={`px-3 py-2 rounded-md text-sm font-medium transition-colors ${
+              className={`px-4 py-2 rounded-lg text-sm font-semibold transition-all duration-300 ${
                 isActive('/') 
-                  ? 'text-blue-600 bg-blue-50' 
-                  : 'text-gray-700 hover:text-blue-600 hover:bg-gray-50'
+                  ? 'text-blue-600 bg-gradient-to-r from-blue-50 to-blue-100 shadow-md' 
+                  : 'text-gray-700 hover:text-blue-600 hover:bg-gray-50 hover:shadow-sm'
               }`}
             >
               Explore
@@ -117,7 +116,7 @@ function NavbarComponent() {
             {/* Link: About Ecuador */}
             <a 
               href="/#about" 
-              className="px-3 py-2 rounded-md text-sm font-medium transition-colors text-gray-700 hover:text-blue-600 hover:bg-gray-50"
+              className="px-4 py-2 rounded-lg text-sm font-semibold transition-all duration-300 text-gray-700 hover:text-teal-600 hover:bg-teal-50 hover:shadow-sm"
             >
               About Ecuador
             </a>
@@ -126,13 +125,13 @@ function NavbarComponent() {
             {isLoggedIn && (
               <Link 
                 to="/game" 
-                className={`px-3 py-2 rounded-md text-sm font-medium transition-colors flex items-center gap-2 ${
+                className={`px-4 py-2 rounded-lg text-sm font-semibold transition-all duration-300 flex items-center gap-2 ${
                   isActive('/game') 
-                    ? 'text-purple-600 bg-purple-50' 
-                    : 'text-gray-700 hover:text-purple-600 hover:bg-gray-50'
+                    ? 'text-white bg-gradient-to-r from-purple-600 to-pink-600 shadow-lg' 
+                    : 'text-gray-700 hover:text-purple-600 hover:bg-purple-50 hover:shadow-sm'
                 }`}
               >
-                <span className="text-lg">🏆</span>
+                <span className="text-lg">🎮</span>
                 Practice
               </Link>
             )}
@@ -140,14 +139,14 @@ function NavbarComponent() {
             {/* Link: Favorites (con icono de corazón) */}
             <Link 
               to="/favorites" 
-              className={`px-3 py-2 rounded-md text-sm font-medium transition-colors flex items-center gap-2 ${
+              className={`px-4 py-2 rounded-lg text-sm font-semibold transition-all duration-300 flex items-center gap-2 ${
                 isActive('/favorites') 
-                  ? 'text-blue-600 bg-blue-50' 
-                  : 'text-gray-700 hover:text-blue-600 hover:bg-gray-50'
+                  ? 'text-red-600 bg-gradient-to-r from-red-50 to-pink-50 shadow-md' 
+                  : 'text-gray-700 hover:text-red-600 hover:bg-red-50 hover:shadow-sm'
               }`}
             >
               <svg 
-                className="w-5 h-5" 
+                className="w-5 h-5 group-hover:scale-110 transition-transform" 
                 fill="none" 
                 stroke="currentColor" 
                 viewBox="0 0 24 24"
@@ -166,7 +165,7 @@ function NavbarComponent() {
             {isLoggedIn ? (
               <button
                 onClick={handleLogout}
-                className="px-3 py-2 rounded-md text-sm font-medium transition-colors text-red-600 hover:text-red-700 hover:bg-red-50 flex items-center gap-2"
+                className="px-4 py-2 rounded-lg text-sm font-semibold transition-all duration-300 text-white bg-gradient-to-r from-red-500 to-red-600 hover:from-red-600 hover:to-red-700 hover:shadow-lg flex items-center gap-2"
               >
                 <svg 
                   className="w-5 h-5" 
@@ -186,10 +185,10 @@ function NavbarComponent() {
             ) : (
               <Link 
                 to="/login" 
-                className={`px-3 py-2 rounded-md text-sm font-medium transition-colors flex items-center gap-2 ${
+                className={`px-4 py-2 rounded-lg text-sm font-semibold transition-all duration-300 flex items-center gap-2 ${
                   isActive('/login') 
-                    ? 'text-blue-600 bg-blue-50' 
-                    : 'text-gray-700 hover:text-blue-600 hover:bg-gray-50'
+                    ? 'text-white bg-gradient-to-r from-blue-600 to-blue-700 shadow-lg' 
+                    : 'text-white bg-gradient-to-r from-blue-500 to-blue-600 hover:from-blue-600 hover:to-blue-700 hover:shadow-lg'
                 }`}
               >
                 <svg 
@@ -234,7 +233,7 @@ function NavbarComponent() {
 
         {/* --- MOBILE MENU (Collapse) --- */}
         {isMobileMenuOpen && (
-          <div className="md:hidden bg-white border-t border-gray-200 py-4 space-y-2">
+          <div className="md:hidden bg-white/95 backdrop-blur-md border-t border-gray-200 py-4 space-y-2 shadow-lg">
             
             {/* Link: Explore */}
             <Link 

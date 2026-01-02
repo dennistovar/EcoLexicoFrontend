@@ -47,12 +47,29 @@ export const RegionPage = () => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [searchTerm, setSearchTerm] = useState('');
+  const [selectedCategory, setSelectedCategory] = useState('All');
   
   // Estado para favoritos
   const [favorites, setFavorites] = useState<Set<number>>(new Set());
 
   // Obtener configuración de la región actual
   const currentRegion = regionId ? regionConfig[regionId] : null;
+
+  // Definir categorías según la región
+  const getCategories = () => {
+    switch (regionId) {
+      case 'costa':
+        return ['All', 'Greetings', 'Party', 'Food', 'Expressions', 'Conflicts'];
+      case 'oriente':
+        return ['All', 'Nature', 'Traditions', 'Gastronomy', 'Daily Life'];
+      case 'sierra':
+        return ['All', 'Expressions', 'Food', 'Informal', 'Affirmations'];
+      default:
+        return ['All'];
+    }
+  };
+
+  const categories = getCategories();
 
   // Mapa de colores dinámicos según la región
   const getRegionTheme = () => {
@@ -71,9 +88,9 @@ export const RegionPage = () => {
         };
       case 'oriente':
         return {
-          bgColor: 'bg-amber-500',
-          textColor: 'text-gray-900',
-          hoverColor: 'hover:bg-amber-600'
+          bgColor: 'bg-orange-400',
+          textColor: 'text-white',
+          hoverColor: 'hover:bg-orange-500'
         };
       default:
         return {
@@ -86,11 +103,18 @@ export const RegionPage = () => {
 
   const theme = getRegionTheme();
 
-  // Filtrar palabras según el término de búsqueda
-  const filteredWords = words.filter(word =>
-    word.palabra.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    word.significado.toLowerCase().includes(searchTerm.toLowerCase())
-  );
+  // Filtrar palabras según el término de búsqueda y categoría
+  const filteredWords = words.filter(word => {
+    const matchesSearch = 
+      word.palabra.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      word.significado.toLowerCase().includes(searchTerm.toLowerCase());
+    
+    const matchesCategory = 
+      selectedCategory === 'All' || 
+      (word as any).categoria === selectedCategory;
+    
+    return matchesSearch && matchesCategory;
+  });
 
   // Verificar si hay usuario autenticado
   const isAuthenticated = () => {
@@ -259,24 +283,33 @@ export const RegionPage = () => {
       {/* --- CONTENEDOR MODAL BLANCO --- */}
       <div className="bg-white rounded-2xl max-w-6xl w-full max-h-[90vh] flex flex-col overflow-hidden shadow-2xl mx-4">
         
-        {/* --- HEADER DINÁMICO SEGÚN LA REGIÓN --- */}
-        <div className={`${theme.bgColor} px-6 py-4 flex justify-between items-center`}>
-          <div>
-            <h1 className={`text-2xl font-bold ${theme.textColor}`}>
-              {currentRegion.name}
-            </h1>
-            <p className={`${theme.textColor} text-sm opacity-90`}>
-              Discover authentic words from this region
+        {/* --- HEADER DINÁMICO SEGÚN LA REGIÓN (Mejorado) --- */}
+        <div className={`${theme.bgColor} px-6 py-5 flex justify-between items-center relative`}>
+          {/* Efecto de brillo/overlay */}
+          <div className="absolute inset-0 bg-gradient-to-r from-white/10 to-transparent pointer-events-none"></div>
+          
+          <div className="relative z-10">
+            <div className="flex items-center gap-3 mb-1">
+              <span className="text-3xl" style={{ filter: 'drop-shadow(0 2px 4px rgba(0,0,0,0.2))' }}>
+                {currentRegion.emoji}
+              </span>
+              <h1 className={`text-2xl font-black ${theme.textColor} tracking-tight`}
+                  style={{ textShadow: '2px 2px 4px rgba(0,0,0,0.1)' }}>
+                {currentRegion.name}
+              </h1>
+            </div>
+            <p className={`${theme.textColor} text-sm font-medium opacity-90 ml-12`}>
+              {currentRegion.description}
             </p>
           </div>
           
-          {/* Botón Cerrar (X) */}
+          {/* Botón Cerrar (X) - Mejorado */}
           <Link 
             to="/" 
-            className={`${theme.textColor} ${theme.hoverColor} p-2 rounded-full transition-colors`}
+            className={`${theme.textColor} ${theme.hoverColor} p-2 rounded-full transition-all duration-200 transform hover:scale-110 hover:rotate-90 relative z-10 bg-black/10`}
             aria-label="Close and return home"
           >
-            <FaTimes className="text-2xl" />
+            <FaTimes className="text-xl" />
           </Link>
         </div>
 
@@ -331,33 +364,65 @@ export const RegionPage = () => {
           {/* Words Grid */}
           {!loading && !error && filteredWords.length > 0 && (
             <>
-              {/* BARRA DE BÚSQUEDA Y CONTADOR */}
-              <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 mb-6">
-                {/* Barra de Búsqueda (Izquierda) */}
-                <div className="bg-white rounded-lg shadow-md p-4 flex items-center gap-3 w-full md:w-96">
-                  <FaSearch className="text-gray-400 text-xl" />
+              {/* BARRA DE BÚSQUEDA */}
+              <div className="mb-4">
+                <div className={`bg-white rounded-xl shadow-lg border-2 ${
+                  searchTerm ? 'border-' + (regionId === 'costa' ? 'blue' : regionId === 'sierra' ? 'green' : 'orange') + '-400' : 'border-gray-200'
+                } p-4 flex items-center gap-3 transition-all duration-200 hover:shadow-xl`}>
+                  <div className={`w-10 h-10 ${theme.bgColor} rounded-lg flex items-center justify-center shadow-md`}>
+                    <FaSearch className="text-white text-lg" />
+                  </div>
                   <input
                     type="text"
                     placeholder="Search words..."
                     value={searchTerm}
                     onChange={(e) => setSearchTerm(e.target.value)}
-                    className="flex-1 outline-none text-gray-700 placeholder-gray-400"
+                    className="flex-1 outline-none text-gray-700 placeholder-gray-400 font-medium"
                   />
                   {searchTerm && (
                     <button
                       onClick={() => setSearchTerm('')}
-                      className="text-gray-400 hover:text-gray-600"
+                      className="w-8 h-8 rounded-full bg-gray-100 hover:bg-gray-200 flex items-center justify-center transition-colors"
                       aria-label="Clear search"
                     >
-                      <FaTimes />
+                      <FaTimes className="text-gray-600" />
                     </button>
                   )}
                 </div>
+              </div>
 
-                {/* Contador (Derecha) */}
-                <p className="text-gray-600 text-sm md:text-base">
-                  Showing {filteredWords.length} of {words.length} words
-                </p>
+              {/* FILTROS POR CATEGORÍA */}
+              <div className="mb-6 overflow-x-auto">
+                <div className="flex gap-2 pb-2 items-center">
+                  {/* Botón de regresar a "All" */}
+                  {selectedCategory !== 'All' && (
+                    <button
+                      onClick={() => setSelectedCategory('All')}
+                      className={`px-4 py-2.5 rounded-full font-semibold text-sm whitespace-nowrap transition-all duration-200 transform hover:scale-105 shadow-md flex items-center gap-2 ${theme.bgColor} ${theme.textColor}`}
+                      title="Back to all words"
+                    >
+                      <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M10 19l-7-7m0 0l7-7m-7 7h18" />
+                      </svg>
+                      Back
+                    </button>
+                  )}
+                  
+                  {/* Botones de categorías */}
+                  {categories.map((category) => (
+                    <button
+                      key={category}
+                      onClick={() => setSelectedCategory(category)}
+                      className={`px-5 py-2.5 rounded-full font-semibold text-sm whitespace-nowrap transition-all duration-200 transform hover:scale-105 shadow-md ${
+                        selectedCategory === category
+                          ? `${theme.bgColor} ${theme.textColor} shadow-lg`
+                          : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+                      }`}
+                    >
+                      {category}
+                    </button>
+                  ))}
+                </div>
               </div>
 
               {/* Grid de Tarjetas */}
@@ -368,6 +433,7 @@ export const RegionPage = () => {
                     word={word}
                     isFavorite={favorites.has(word.id)}
                     onFavoriteClick={handleFavoriteToggle}
+                    regionId={regionId}
                   />
                 ))}
               </div>

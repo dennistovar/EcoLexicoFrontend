@@ -62,40 +62,52 @@ export const AdminLoginPage = () => {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-green-50 via-white to-green-100 flex items-center justify-center py-12 px-4 sm:px-6 lg:px-8">
-      <div className="max-w-md w-full">
+    <div className="min-h-screen bg-gradient-to-br from-emerald-900 via-teal-800 to-green-900 flex items-center justify-center py-12 px-4 sm:px-6 lg:px-8 relative overflow-hidden">
+      {/* Decorative Elements */}
+      <div className="absolute inset-0 opacity-20">
+        <div className="absolute top-20 left-20 w-64 h-64 bg-emerald-400 rounded-full blur-3xl animate-pulse"></div>
+        <div className="absolute bottom-20 right-20 w-80 h-80 bg-teal-400 rounded-full blur-3xl animate-pulse" style={{animationDelay: '1s'}}></div>
+        <div className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 w-96 h-96 bg-green-400 rounded-full blur-3xl"></div>
+      </div>
+      
+      <div className="max-w-md w-full relative z-10">
         
         {/* --- LOGO FUERA DE LA TARJETA --- */}
-        <div className="text-center mb-6">
-          <Link to="/">
-            <img 
-              src="/img/logo.png" 
-              alt="EcoLéxico Logo" 
-              className="w-36 h-36 mx-auto mb-6 rounded-full object-cover border-4 border-white shadow-lg"
-            />
+        <div className="text-center mb-8">
+          <Link to="/" className="inline-block group">
+            <div className="bg-white p-4 rounded-full shadow-2xl group-hover:shadow-3xl transition-all duration-300 group-hover:scale-105">
+              <img 
+                src="/img/logo.png" 
+                alt="EcoLéxico Logo" 
+                className="w-32 h-32 object-cover rounded-full"
+              />
+            </div>
           </Link>
         </div>
 
         {/* --- CARD PRINCIPAL --- */}
-        <Card className="shadow-2xl rounded-2xl border border-gray-100 bg-white">
+        <Card className="shadow-2xl rounded-3xl border border-white/20 bg-white/95 backdrop-blur-xl">
           
           {/* --- HEADER CON TÍTULO --- */}
-          <div className="text-center mb-6">
+          <div className="text-center mb-8">
             {/* Badge Admin */}
-            <div className="inline-block px-3 py-1 bg-green-100 rounded-full mb-3">
-              <span className="text-xs font-bold text-green-700 uppercase tracking-wide">
+            <div className="inline-block px-4 py-2 bg-gradient-to-r from-emerald-500 to-teal-500 rounded-full mb-4 shadow-lg">
+              <span className="text-xs font-black text-white uppercase tracking-wide flex items-center gap-2">
+                <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
+                  <path fillRule="evenodd" d="M18 8a6 6 0 01-7.743 5.743L10 14l-1 1-1 1H6v2H2v-4l4.257-4.257A6 6 0 1118 8zm-6-4a1 1 0 100 2 2 2 0 012 2 1 1 0 102 0 4 4 0 00-4-4z" clipRule="evenodd" />
+                </svg>
                 Admin Portal
               </span>
             </div>
             
             {/* Título */}
-            <h1 className="text-3xl font-bold text-gray-800 mb-2">
+            <h1 className="text-4xl font-black bg-gradient-to-r from-gray-800 to-gray-600 text-transparent bg-clip-text mb-3">
               Administrator Access
             </h1>
             
             {/* Subtítulo */}
-            <p className="text-gray-500 text-sm">
-              Authorized personnel only
+            <p className="text-gray-600 font-medium">
+              🔒 Authorized personnel only
             </p>
           </div>
 
@@ -148,7 +160,7 @@ export const AdminLoginPage = () => {
               type="submit" 
               size="lg"
               disabled={loading}
-              className="w-full bg-green-600 hover:bg-green-700 focus:ring-4 focus:ring-green-300 rounded-xl"
+              className="w-full bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-700 hover:to-teal-700 focus:ring-4 focus:ring-emerald-300 rounded-xl shadow-lg hover:shadow-xl transition-all duration-300 transform hover:scale-105 font-bold text-lg"
             >
               {loading ? (
                 <div className="flex items-center justify-center gap-2">
@@ -167,13 +179,13 @@ export const AdminLoginPage = () => {
         </Card>
 
         {/* --- INFO BOX --- */}
-        <div className="mt-6 text-center">
-          <p className="text-sm text-gray-600 mb-3">
-            All access attempts are monitored and logged.
+        <div className="mt-8 text-center">
+          <p className="text-sm text-white/90 mb-4 font-medium">
+            🔐 All access attempts are monitored and logged.
           </p>
           <Link 
             to="/" 
-            className="text-gray-600 hover:text-gray-900 text-sm flex items-center justify-center gap-2 transition-colors"
+            className="text-white/80 hover:text-white text-sm flex items-center justify-center gap-2 transition-all duration-300 hover:scale-105 font-semibold"
           >
             <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 19l-7-7m0 0l7-7m-7 7h18" />
