@@ -2,6 +2,13 @@ import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { FaVolumeUp, FaHeart, FaMapMarkerAlt } from 'react-icons/fa';
 
+// --- MAPEO DE REGIONES ---
+const regionNames: Record<number, string> = {
+  1: 'Costa',
+  2: 'Sierra',
+  3: 'Oriente'
+};
+
 // --- INTERFACE DE LA PALABRA ---
 interface Word {
   id?: number;
@@ -26,17 +33,22 @@ export const WordCard = ({ word, onFavoriteClick, isFavorite = false, regionId }
   const [audioError, setAudioError] = useState(false);
   const navigate = useNavigate();
 
+  // Obtener el nombre de la región
+  const getRegionName = () => {
+    return regionNames[word.region_id] || 'Regional Expression';
+  };
+
   // Colores dinámicos según la región
   const getAudioButtonColor = () => {
     switch (regionId) {
       case 'costa':
-        return 'bg-blue-500 hover:bg-blue-600';
+        return 'bg-gradient-to-r from-blue-500 to-blue-600 hover:from-blue-600 hover:to-blue-700 shadow-lg shadow-blue-500/50';
       case 'sierra':
-        return 'bg-green-500 hover:bg-green-600';
+        return 'bg-gradient-to-r from-green-600 to-emerald-600 hover:from-green-700 hover:to-emerald-700 shadow-lg shadow-green-500/50';
       case 'oriente':
-        return 'bg-orange-400 hover:bg-orange-500';
+        return 'bg-gradient-to-r from-green-500 to-green-700 hover:from-green-600 hover:to-green-800 shadow-lg shadow-green-500/50';
       default:
-        return 'bg-blue-500 hover:bg-blue-600';
+        return 'bg-gradient-to-r from-yellow-400 to-yellow-600 hover:from-yellow-500 hover:to-yellow-700 shadow-lg shadow-yellow-500/50';
     }
   };
 
@@ -52,7 +64,6 @@ export const WordCard = ({ word, onFavoriteClick, isFavorite = false, regionId }
     setIsPlaying(true);
 
     try {
-      const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:5000';
       const token = localStorage.getItem('token');
       
       // Si no hay token, reproducir directamente (menos seguro pero funcional)
@@ -64,7 +75,7 @@ export const WordCard = ({ word, onFavoriteClick, isFavorite = false, regionId }
 
       // 2. Solicitar URL firmada al backend
       const response = await fetch(
-        `${API_URL}/api/audio/signed-url?url=${encodeURIComponent(word.audio_url)}`,
+        `/api/audio/signed-url?url=${encodeURIComponent(word.audio_url)}`,
         {
           headers: {
             'Authorization': `Bearer ${token}`
@@ -132,7 +143,7 @@ export const WordCard = ({ word, onFavoriteClick, isFavorite = false, regionId }
   };
 
   return (
-    <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-5 h-full">
+    <div className="bg-white rounded-2xl shadow-lg hover:shadow-2xl border-2 border-yellow-200 hover:border-blue-400 p-6 h-full transform hover:scale-105 transition-all duration-300">
       
       {/* Contenedor Flexbox para alinear el footer al fondo */}
       <div className="flex flex-col h-full justify-between">
@@ -144,7 +155,7 @@ export const WordCard = ({ word, onFavoriteClick, isFavorite = false, regionId }
             
             {/* Título */}
             <div>
-              <h3 className="text-2xl font-bold text-gray-800">
+              <h3 className="text-2xl font-black bg-gradient-to-r from-yellow-600 via-blue-600 to-red-600 text-transparent bg-clip-text">
                 {word.palabra}
               </h3>
             </div>
@@ -153,11 +164,11 @@ export const WordCard = ({ word, onFavoriteClick, isFavorite = false, regionId }
             <button
               onClick={handlePlayAudio}
               disabled={isPlaying || !word.audio_url}
-              className={`w-10 h-10 ${getAudioButtonColor()} disabled:bg-gray-300 
-                        rounded-lg flex items-center justify-center transition-colors shadow-md`}
+              className={`w-12 h-12 ${getAudioButtonColor()} disabled:bg-gray-300 disabled:shadow-none
+                        rounded-xl flex items-center justify-center transition-all duration-300 transform hover:scale-110`}
               aria-label="Play audio"
             >
-              <FaVolumeUp className="text-white text-lg" />
+              <FaVolumeUp className="text-white text-xl" />
             </button>
 
           </div>
@@ -167,15 +178,15 @@ export const WordCard = ({ word, onFavoriteClick, isFavorite = false, regionId }
             
             {/* Sección Meaning */}
             <div>
-              <p className="text-sm font-bold text-gray-900 mb-1">Meaning</p>
-              <p className="text-gray-600">{word.significado}</p>
+              <p className="text-sm font-bold text-blue-700 mb-1">Meaning</p>
+              <p className="text-gray-700 leading-relaxed">{word.significado}</p>
             </div>
 
             {/* Sección Example */}
             {word.ejemplo && (
               <div>
-                <p className="text-sm font-bold text-gray-900 mb-1">Example</p>
-                <p className="text-gray-600 italic">"{word.ejemplo}"</p>
+                <p className="text-sm font-bold text-blue-700 mb-1">Example</p>
+                <p className="text-gray-600 italic leading-relaxed">"{word.ejemplo}"</p>
               </div>
             )}
 
@@ -183,26 +194,26 @@ export const WordCard = ({ word, onFavoriteClick, isFavorite = false, regionId }
         </div>
 
         {/* --- PIE DE TARJETA: Regional Expression + Save --- */}
-        <div className="flex justify-between items-center pt-4 border-t border-gray-200">
+        <div className="flex justify-between items-center pt-4 border-t border-yellow-200">
           
           {/* Izquierda: Icono Pin + Texto */}
-          <div className="flex items-center gap-2 text-gray-500">
+          <div className="flex items-center gap-2 text-blue-700">
             <FaMapMarkerAlt className="text-sm" />
-            <span className="text-sm">Regional Expression</span>
+            <span className="text-sm font-bold">{getRegionName()}</span>
           </div>
 
           {/* Derecha: Botón Save con Corazón */}
           <button
             onClick={handleSaveClick}
-            className={`flex items-center gap-2 px-3 py-1.5 rounded-md transition-colors ${
+            className={`flex items-center gap-2 px-4 py-2 rounded-lg transition-all duration-300 transform hover:scale-105 ${
               isFavorite 
-                ? 'text-red-500 hover:text-red-600' 
-                : 'text-gray-500 hover:text-red-500'
+                ? 'text-white bg-gradient-to-r from-red-500 to-red-600 shadow-lg shadow-red-500/50' 
+                : 'text-gray-600 hover:text-white hover:bg-gradient-to-r hover:from-red-500 hover:to-red-600 hover:shadow-lg hover:shadow-red-500/50 border-2 border-yellow-400'
             }`}
             aria-label={isFavorite ? 'Remove from favorites' : 'Add to favorites'}
           >
             <FaHeart className={isFavorite ? 'fill-current' : ''} />
-            <span className="text-sm font-medium">Save</span>
+            <span className="text-sm font-bold">Save</span>
           </button>
 
         </div>

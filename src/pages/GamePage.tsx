@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { Card, Button, Progress } from 'flowbite-react';
 import { FaHeart, FaVolumeUp, FaTrophy, FaRedo, FaHome } from 'react-icons/fa';
-import axios from 'axios';
+import api from '../services/api';
 
 // --- LEVEL DATA ---
 const LEVEL_DATA = [
@@ -83,8 +83,7 @@ export const GamePage = () => {
     const fetchWords = async () => {
       try {
         setGameState('loading');
-        const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:5000';
-        const response = await axios.get(`${API_URL}/api/words`);
+        const response = await api.get('/words');
         
         if (response.data.length < 4) {
           alert(' Need at least 4 words in the database to play');

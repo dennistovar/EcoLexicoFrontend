@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react';
 import { useParams, Link, useNavigate } from 'react-router-dom';
 import { Spinner } from 'flowbite-react';
 import { FaSearch, FaTimes } from 'react-icons/fa';
-import axios from 'axios';
+import api from '../services/api';
 import { WordCard } from '../components/WordCard';
 
 // Tipos
@@ -141,12 +141,7 @@ export const RegionPage = () => {
       if (!isAuthenticated()) return;
 
       try {
-        const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:5000';
-        const token = localStorage.getItem('token');
-        
-        const response = await axios.get(`${API_URL}/api/favorites`, {
-          headers: { Authorization: `Bearer ${token}` }
-        });
+        const response = await api.get('/favorites');
 
         // Crear Set con los IDs de palabras favoritas
         const favoriteIds = new Set<number>(response.data.map((fav: any) => fav.word_id));
@@ -172,8 +167,7 @@ export const RegionPage = () => {
         setLoading(true);
         setError(null);
         
-        const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:5000';
-        const response = await axios.get(`${API_URL}/api/words`);
+        const response = await api.get('/words');
         
         // Filtrar palabras por region_id
         const filteredWords = response.data.filter(
@@ -224,21 +218,12 @@ export const RegionPage = () => {
 
     // 3. Hacer request al backend
     try {
-      const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:5000';
-      const token = localStorage.getItem('token');
-
       if (isFavorite) {
         // ELIMINAR favorito
-        await axios.delete(`${API_URL}/api/favorites/${wordId}`, {
-          headers: { Authorization: `Bearer ${token}` }
-        });
+        await api.delete(`/api/favorites/${wordId}`);
       } else {
         // AGREGAR favorito
-        await axios.post(
-          `${API_URL}/api/favorites`,
-          { word_id: wordId },
-          { headers: { Authorization: `Bearer ${token}` } }
-        );
+        await api.post('/favorites', { word_id: wordId });
       }
 
     } catch (err: any) {

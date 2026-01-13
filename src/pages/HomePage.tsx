@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { FaShip, FaMountain, FaLeaf, FaMapMarkerAlt, FaUsers, FaGlobeAmericas, FaVolumeUp, FaMap, FaBookOpen, FaEnvelope, FaRegCompass, FaPlayCircle, FaGamepad, FaHeadphones, FaBook, FaHeart } from 'react-icons/fa';
+import { Alert } from 'flowbite-react';
 
 // Array de imágenes para el carrusel del Hero
 const heroImages = ["/img/costa-carrucel.jpg", "/img/sierra-carrucel.jpg", "/img/oriente-carrucel.jpg"];
@@ -12,6 +13,9 @@ export const HomePage = () => {
   const [isVideoModalOpen, setIsVideoModalOpen] = useState(false);
   // Estado para controlar el modal del juego
   const [openGameModal, setOpenGameModal] = useState(false);
+  // Estado para mostrar el mensaje de bienvenida
+  const [showWelcome, setShowWelcome] = useState(false);
+  const [userName, setUserName] = useState<string>('');
   
   const navigate = useNavigate();
 
@@ -39,8 +43,74 @@ export const HomePage = () => {
     return () => clearInterval(interval);
   }, []);
 
+  // Efecto para mostrar mensaje de bienvenida al iniciar sesión
+  useEffect(() => {
+    // Verificar si hay un usuario logueado
+    const userStr = localStorage.getItem('user');
+    const justLoggedIn = sessionStorage.getItem('justLoggedIn');
+    
+    if (userStr) {
+      try {
+        const user = JSON.parse(userStr);
+        setUserName(user.nombre_usuario || user.email || 'Usuario');
+        
+        // Mostrar mensaje solo si acaba de iniciar sesión
+        if (justLoggedIn === 'true') {
+          setShowWelcome(true);
+          // Remover la marca después de mostrar el mensaje
+          sessionStorage.removeItem('justLoggedIn');
+          
+          // Ocultar el mensaje después de 5 segundos
+          setTimeout(() => {
+            setShowWelcome(false);
+          }, 5000);
+        }
+      } catch (error) {
+        console.error('Error parsing user data:', error);
+      }
+    }
+  }, []);
+
   return (
     <div className="min-h-screen">
+      
+      {/* --- WELCOME MESSAGE --- */}
+      {showWelcome && (
+        <div className="fixed top-6 right-6 z-50 animate-slide-in-right">
+          <div className="bg-white/95 backdrop-blur-sm rounded-xl shadow-lg border border-emerald-200 p-4 max-w-xs">
+            {/* Close button */}
+            <button
+              onClick={() => setShowWelcome(false)}
+              className="absolute top-2 right-2 text-gray-400 hover:text-gray-600 transition-colors"
+            >
+              <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+              </svg>
+            </button>
+            
+            <div className="flex items-start gap-3 pr-4">
+              {/* Icon */}
+              <div className="flex-shrink-0">
+                <div className="w-8 h-8 bg-emerald-500 rounded-full flex items-center justify-center">
+                  <svg className="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M5 13l4 4L19 7" />
+                  </svg>
+                </div>
+              </div>
+              
+              {/* Content */}
+              <div className="flex-1">
+                <h3 className="font-bold text-sm text-emerald-700 mb-1">
+                  Welcome, {userName}!
+                </h3>
+                <p className="text-gray-600 text-xs">
+                  Login successful. Start exploring! 🌎
+                </p>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
       
       {/* --- HERO SECTION --- */}
       <section 
@@ -60,9 +130,9 @@ export const HomePage = () => {
             {/* Título Principal con Colores */}
             <h1 className="text-4xl md:text-7xl font-black mb-6 leading-tight">
               <span className="text-white drop-shadow-lg">Discover </span>
-              <span className="bg-gradient-to-r from-yellow-400 to-orange-400 text-transparent bg-clip-text drop-shadow-lg">Ecuador's</span>
+              <span className="bg-gradient-to-r from-yellow-400 via-yellow-500 to-amber-400 text-transparent bg-clip-text drop-shadow-lg">Ecuador’s</span>
               <br />
-              <span className="bg-gradient-to-r from-green-400 to-emerald-500 text-transparent bg-clip-text drop-shadow-lg">Linguistic </span>
+              <span className="bg-gradient-to-r from-green-500 to-emerald-600 text-transparent bg-clip-text drop-shadow-lg">Linguistic </span>
               <span className="text-white drop-shadow-lg">Heritage</span>
             </h1>
 
@@ -75,7 +145,7 @@ export const HomePage = () => {
             <div className="flex flex-wrap gap-4">
               {/* Botón 1: Start Exploring */}
               <Link to="/region/costa">
-                <button className="flex items-center gap-2 px-6 py-3 bg-yellow-500 text-white rounded-lg hover:bg-yellow-600 transition-colors font-medium shadow-lg">
+                <button className="flex items-center gap-2 px-6 py-3 bg-gradient-to-r from-yellow-500 to-yellow-600 text-white rounded-lg hover:from-yellow-600 hover:to-yellow-700 transition-all duration-300 font-bold shadow-xl hover:shadow-2xl hover:scale-105">
                   <FaRegCompass className="text-xl" />
                   Start Exploring
                 </button>
@@ -84,7 +154,7 @@ export const HomePage = () => {
               {/* Botón 2: Ecu-Quiz */}
               <button 
                 onClick={() => setOpenGameModal(true)}
-                className="flex items-center gap-2 px-6 py-3 bg-purple-600 text-white rounded-lg hover:bg-purple-700 transition-colors font-medium shadow-lg"
+                className="flex items-center gap-2 px-6 py-3 bg-gradient-to-r from-blue-600 to-blue-700 text-white rounded-lg hover:from-blue-700 hover:to-blue-800 transition-all duration-300 font-bold shadow-xl hover:shadow-2xl hover:scale-105"
               >
                 <FaGamepad className="text-xl" />
                 Ecu-Quiz
@@ -93,7 +163,7 @@ export const HomePage = () => {
               {/* Botón 3: Watch Introduction */}
               <button 
                 onClick={() => setIsVideoModalOpen(true)}
-                className="flex items-center gap-2 px-6 py-3 bg-transparent border-2 border-white text-white rounded-lg hover:bg-white/10 transition-colors font-medium"
+                className="flex items-center gap-2 px-6 py-3 bg-white/10 backdrop-blur-sm border-2 border-white text-white rounded-lg hover:bg-white hover:text-blue-700 transition-all duration-300 font-bold shadow-xl"
               >
                 <FaPlayCircle className="text-xl" />
                 Watch Introduction
@@ -141,15 +211,15 @@ export const HomePage = () => {
       )}
 
       {/* --- EXPLORE BY REGION SECTION --- */}
-      <section className="py-20 px-4 bg-gradient-to-b from-white via-gray-50 to-white">
+      <section className="py-20 px-4 bg-gradient-to-br from-blue-50 via-white to-cyan-50">
         <div className="max-w-7xl mx-auto">
           <div className="text-center mb-16">
             <div className="inline-block mb-4">
-              <span className="px-6 py-2 bg-gradient-to-r from-emerald-100 to-teal-100 text-emerald-700 font-black text-sm uppercase tracking-widest rounded-full">
+              <span className="px-6 py-2 bg-gradient-to-r from-blue-100 to-cyan-100 text-blue-700 font-black text-sm uppercase tracking-widest rounded-full shadow-sm">
                 Discover Ecuador
               </span>
             </div>
-            <h2 className="text-5xl md:text-6xl font-black text-emerald-700 mb-4">
+            <h2 className="text-5xl md:text-6xl font-black text-blue-800 mb-4">
               Explore by Region
             </h2>
             <p className="text-center text-gray-600 text-xl font-light max-w-3xl mx-auto leading-relaxed">
@@ -282,15 +352,15 @@ export const HomePage = () => {
       </section>
 
       {/* --- FEATURES SECTION --- */}
-      <section className="py-16 px-4 bg-white">
+      <section className="py-16 px-4 bg-gradient-to-br from-yellow-50 via-amber-50 to-orange-50">
         <div className="max-w-6xl mx-auto">
           
           {/* Título y Subtítulo */}
           <div className="text-center mb-12">
-            <h2 className="text-5xl md:text-6xl font-black bg-gradient-to-r from-purple-600 via-pink-600 to-red-600 text-transparent bg-clip-text mb-4">
+            <h2 className="text-5xl md:text-6xl font-black bg-gradient-to-r from-blue-600 via-green-600 to-yellow-600 text-transparent bg-clip-text mb-4">
               Why Choose EcoLéxico?
             </h2>
-            <p className="text-gray-600 text-xl font-light">
+            <p className="text-gray-700 text-xl font-medium">
               The most comprehensive platform for learning authentic Ecuadorian Spanish
             </p>
           </div>
@@ -299,73 +369,73 @@ export const HomePage = () => {
           <div className="grid grid-cols-1 md:grid-cols-4 gap-8">
             
             {/* TARJETA 1: Audio Pronunciation */}
-            <div className="bg-yellow-50 rounded-xl p-8 text-center hover:shadow-xl hover:-translate-y-1 transition-all duration-300 group cursor-pointer">
+            <div className="bg-white rounded-xl p-8 text-center hover:shadow-2xl hover:-translate-y-2 transition-all duration-300 group cursor-pointer border border-yellow-200">
               {/* Icono Circular */}
               <div className="flex justify-center mb-4">
-                <div className="w-16 h-16 bg-yellow-400 rounded-full flex items-center justify-center group-hover:scale-110 transition-transform duration-300">
-                  <FaVolumeUp className="text-white text-2xl group-hover:animate-pulse" />
+                <div className="w-16 h-16 bg-gradient-to-br from-yellow-400 to-yellow-500 rounded-full flex items-center justify-center group-hover:scale-110 transition-transform duration-300 shadow-lg">
+                  <FaVolumeUp className="text-white text-2xl" />
                 </div>
               </div>
               {/* Título */}
-              <h3 className="text-xl font-black text-gray-800 mb-3 group-hover:text-yellow-600 transition-colors duration-300">
+              <h3 className="text-xl font-black text-gray-800 mb-3 group-hover:text-yellow-700 transition-colors duration-300">
                 Audio Pronunciation
               </h3>
               {/* Descripción */}
-              <p className="text-gray-600 leading-relaxed font-light">
+              <p className="text-gray-600 leading-relaxed font-medium">
                 Listen to authentic regional pronunciations from native speakers across Ecuador.
               </p>
             </div>
 
             {/* TARJETA 2: Regional Context */}
-            <div className="bg-emerald-50 rounded-xl p-8 text-center hover:shadow-xl hover:-translate-y-1 transition-all duration-300 group cursor-pointer">
+            <div className="bg-white rounded-xl p-8 text-center hover:shadow-2xl hover:-translate-y-2 transition-all duration-300 group cursor-pointer border border-green-200">
               {/* Icono Circular */}
               <div className="flex justify-center mb-4">
-                <div className="w-16 h-16 bg-emerald-400 rounded-full flex items-center justify-center group-hover:scale-110 transition-transform duration-300">
-                  <FaMap className="text-white text-2xl group-hover:rotate-12 transition-transform duration-300" />
+                <div className="w-16 h-16 bg-gradient-to-br from-green-500 to-emerald-500 rounded-full flex items-center justify-center group-hover:scale-110 transition-transform duration-300 shadow-lg">
+                  <FaMap className="text-white text-2xl" />
                 </div>
               </div>
               {/* Título */}
-              <h3 className="text-xl font-black text-gray-800 mb-3 group-hover:text-emerald-600 transition-colors duration-300">
+              <h3 className="text-xl font-black text-gray-800 mb-3 group-hover:text-green-700 transition-colors duration-300">
                 Regional Context
               </h3>
               {/* Descripción */}
-              <p className="text-gray-600 leading-relaxed font-light">
+              <p className="text-gray-600 leading-relaxed font-medium">
                 Understand the cultural and geographical context behind each word and expression.
               </p>
             </div>
 
             {/* TARJETA 3: Cultural Examples */}
-            <div className="bg-blue-50 rounded-xl p-8 text-center hover:shadow-xl hover:-translate-y-1 transition-all duration-300 group cursor-pointer">
+            <div className="bg-white rounded-xl p-8 text-center hover:shadow-2xl hover:-translate-y-2 transition-all duration-300 group cursor-pointer border border-blue-200">
               {/* Icono Circular */}
               <div className="flex justify-center mb-4">
-                <div className="w-16 h-16 bg-blue-500 rounded-full flex items-center justify-center group-hover:scale-110 transition-transform duration-300">
-                  <FaBookOpen className="text-white text-2xl group-hover:rotate-12 transition-transform duration-300" />
+                <div className="w-16 h-16 bg-gradient-to-br from-blue-500 to-blue-600 rounded-full flex items-center justify-center group-hover:scale-110 transition-transform duration-300 shadow-lg">
+                  <FaBookOpen className="text-white text-2xl" />
                 </div>
               </div>
               {/* Título */}
-              <h3 className="text-xl font-black text-gray-800 mb-3 group-hover:text-blue-600 transition-colors duration-300">
+              <h3 className="text-xl font-black text-gray-800 mb-3 group-hover:text-blue-700 transition-colors duration-300">
                 Cultural Examples
               </h3>
               {/* Descripción */}
-              <p className="text-gray-600 leading-relaxed font-light">
+              <p className="text-gray-600 leading-relaxed font-medium">
                 Learn through real-life examples and situations where these words are commonly used.
               </p>
             </div>
 
             {/* TARJETA 4: Favorites List */}
-            <div className="bg-red-50 rounded-xl p-8 text-center hover:shadow-xl hover:-translate-y-1 transition-all duration-300 group cursor-pointer">
+            <div className="bg-white rounded-xl p-8 text-center hover:shadow-2xl hover:-translate-y-2 transition-all duration-300 group cursor-pointer border border-red-200">
               {/* Icono Circular */}
               <div className="flex justify-center mb-4">
-                <div className="w-16 h-16 bg-red-500 rounded-full flex items-center justify-center group-hover:scale-110 transition-transform duration-300">
-                  <FaHeart className="text-white text-2xl group-hover:scale-125 transition-transform duration-300" />
+                <div className="w-16 h-16 bg-gradient-to-br from-red-500 to-rose-500 rounded-full flex items-center justify-center group-hover:scale-110 transition-transform duration-300 shadow-lg">
+                  <FaHeart className="text-white text-2xl" />
                 </div>
               </div>
               {/* Título */}
-              <h3 className="text-xl font-black text-gray-800 mb-3 group-hover:text-red-600 transition-colors duration-300">
+              <h3 className="text-xl font-black text-gray-800 mb-3 group-hover:text-red-700 transition-colors duration-300">
                 Favorites List
               </h3>
               {/* Descripción */}
-              <p className="text-gray-600 leading-relaxed font-light">
+              <p className="text-gray-600 leading-relaxed font-medium">
                 Save words to your personal list to review and practice later.
               </p>
             </div>
@@ -375,7 +445,7 @@ export const HomePage = () => {
       </section>
 
       {/* --- ABOUT ECUADOR SECTION --- */}
-      <section id="about" className="py-16 px-4 bg-gradient-to-r from-teal-500 to-blue-600">
+      <section id="about" className="py-16 px-4 bg-gradient-to-br from-green-700 via-emerald-600 to-teal-600">
         <div className="max-w-7xl mx-auto">
           <div className="grid grid-cols-1 md:grid-cols-2 gap-12 items-center">
             
@@ -384,31 +454,31 @@ export const HomePage = () => {
               <h2 className="text-5xl md:text-6xl font-black mb-6 drop-shadow-lg">
                 About Ecuador
               </h2>
-              <p className="text-xl mb-6 text-white/95 font-light leading-relaxed">
+              <p className="text-xl mb-6 text-white/95 font-medium leading-relaxed">
                 Ecuador is a country of incredible diversity, from the Pacific Coast to the Amazon rainforest, from the Andean highlands to the unique Galápagos Islands.
               </p>
 
               {/* Lista de puntos con iconos */}
               <ul className="space-y-4">
                 <li className="flex items-center gap-3">
-                  <div className="w-10 h-10 bg-yellow-400 rounded-full flex items-center justify-center flex-shrink-0">
+                  <div className="w-10 h-10 bg-yellow-500 rounded-full flex items-center justify-center flex-shrink-0 shadow-lg">
                     <FaMapMarkerAlt className="text-white text-lg" />
                   </div>
-                  <span className="text-xl font-light">3 distinct geographical regions</span>
+                  <span className="text-xl font-medium">3 distinct geographical regions</span>
                 </li>
 
                 <li className="flex items-center gap-3">
-                  <div className="w-10 h-10 bg-yellow-400 rounded-full flex items-center justify-center flex-shrink-0">
+                  <div className="w-10 h-10 bg-yellow-500 rounded-full flex items-center justify-center flex-shrink-0 shadow-lg">
                     <FaUsers className="text-white text-lg" />
                   </div>
-                  <span className="text-xl font-light">14+ indigenous languages spoken</span>
+                  <span className="text-xl font-medium">14+ indigenous languages spoken</span>
                 </li>
 
                 <li className="flex items-center gap-3">
-                  <div className="w-10 h-10 bg-yellow-400 rounded-full flex items-center justify-center flex-shrink-0">
+                  <div className="w-10 h-10 bg-yellow-500 rounded-full flex items-center justify-center flex-shrink-0 shadow-lg">
                     <FaGlobeAmericas className="text-white text-lg" />
                   </div>
-                  <span className="text-xl font-light">Rich cultural and linguistic heritage</span>
+                  <span className="text-xl font-medium">Rich cultural and linguistic heritage</span>
                 </li>
               </ul>
             </div>
@@ -512,148 +582,147 @@ export const HomePage = () => {
       {/* --- GAME INFO MODAL --- */}
       {openGameModal && (
         <div 
-          className="fixed inset-0 bg-black/80 flex items-center justify-center z-50 p-4"
+          className="fixed inset-0 bg-black/80 flex items-center justify-center z-50 p-2 sm:p-4"
           onClick={() => setOpenGameModal(false)}
         >
           <div 
-            className="bg-gradient-to-br from-slate-50 to-gray-100 rounded-3xl max-w-3xl w-full max-h-[90vh] relative shadow-2xl overflow-hidden border border-gray-200 flex flex-col"
+            className="bg-gradient-to-br from-slate-50 to-gray-100 rounded-2xl sm:rounded-3xl max-w-3xl w-full max-h-[95vh] sm:max-h-[90vh] relative shadow-2xl overflow-hidden border border-gray-200 flex flex-col"
             onClick={(e) => e.stopPropagation()}
           >
             {/* Botón Cerrar Mejorado */}
             <button
               onClick={() => setOpenGameModal(false)}
-              className="absolute top-5 right-5 w-11 h-11 flex items-center justify-center rounded-full bg-red-500 hover:bg-red-600 text-white transition-all duration-200 z-20 shadow-xl group"
+              className="absolute top-2 right-2 sm:top-5 sm:right-5 w-9 h-9 sm:w-11 sm:h-11 flex items-center justify-center rounded-full bg-red-500 hover:bg-red-600 text-white transition-all duration-200 z-20 shadow-xl group"
             >
-              <span className="text-2xl font-bold transform group-hover:rotate-90 transition-transform">×</span>
+              <span className="text-xl sm:text-2xl font-bold transform group-hover:rotate-90 transition-transform">×</span>
             </button>
             
-            {/* Hero Header Rediseñado */}
-            <div className="relative bg-gradient-to-br from-emerald-500 via-teal-500 to-cyan-500 px-8 py-8 text-center overflow-hidden">
+            {/* Hero Header Rediseñado - Optimizado para móviles */}
+            <div className="relative bg-gradient-to-br from-blue-500 via-yellow-500 to-green-500 px-4 py-4 sm:px-8 sm:py-6 text-center overflow-hidden flex-shrink-0">
               {/* Decorative Elements */}
-              <div className="absolute top-0 left-0 w-full h-full opacity-20">
-                <div className="absolute top-5 left-5 w-20 h-20 bg-white rounded-full blur-2xl animate-pulse"></div>
-                <div className="absolute bottom-5 right-5 w-24 h-24 bg-white rounded-full blur-3xl animate-pulse animation-delay-1s"></div>
-                <div className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 w-32 h-32 bg-white rounded-full blur-3xl"></div>
+              <div className="absolute top-0 left-0 w-full h-full opacity-10">
+                <div className="absolute top-2 left-2 w-16 h-16 bg-white rounded-full blur-2xl"></div>
+                <div className="absolute bottom-2 right-2 w-20 h-20 bg-white rounded-full blur-3xl"></div>
               </div>
               
               <div className="relative z-10">
-                <div className="inline-block p-3 bg-white/20 backdrop-blur-md rounded-2xl shadow-2xl mb-3">
-                  <span className="text-4xl drop-shadow-2xl">🎮</span>
+                <div className="inline-block p-2 sm:p-3 bg-white/20 backdrop-blur-md rounded-xl sm:rounded-2xl shadow-2xl mb-2">
+                  <span className="text-3xl sm:text-4xl drop-shadow-2xl">🎮</span>
                 </div>
-                <h1 className="text-3xl font-black text-white mb-2 tracking-tight" style={{ textShadow: '2px 2px 4px rgba(0,0,0,0.3)' }}>
+                <h1 className="text-2xl sm:text-3xl font-black text-white mb-1 sm:mb-2 tracking-tight" style={{ textShadow: '2px 2px 4px rgba(0,0,0,0.3)' }}>
                   Reto Ñaño
                 </h1>
-                <p className="text-base text-white/95 font-semibold">
+                <p className="text-sm sm:text-base text-white/95 font-semibold">
                   Ready to prove your skills?
                 </p>
               </div>
             </div>
             
             {/* Content Grid - Con Scroll */}
-            <div className="overflow-y-auto flex-1 px-8 py-6">
-              <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+            <div className="overflow-y-auto flex-1 px-4 py-4 sm:px-8 sm:py-6">
+              <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 sm:gap-6">
               
               {/* Left Column - How to Play */}
-              <div className="space-y-4">
-                <div className="flex items-center gap-3 mb-2">
-                  <div className="w-10 h-10 bg-blue-500 rounded-xl flex items-center justify-center shadow-lg">
-                    <FaHeadphones className="text-white text-lg" />
+              <div className="space-y-3 sm:space-y-4">
+                <div className="flex items-center gap-2 sm:gap-3 mb-2">
+                  <div className="w-8 h-8 sm:w-10 sm:h-10 bg-blue-500 rounded-lg sm:rounded-xl flex items-center justify-center shadow-lg">
+                    <FaHeadphones className="text-white text-base sm:text-lg" />
                   </div>
-                  <h3 className="text-lg font-black text-gray-900 uppercase">How to Play</h3>
+                  <h3 className="text-base sm:text-lg font-black text-gray-900 uppercase">How to Play</h3>
                 </div>
                 
-                <div className="bg-white rounded-2xl p-5 shadow-md border border-blue-100 hover:shadow-lg transition-shadow">
-                  <div className="flex items-start gap-4">
-                    <div className="w-12 h-12 bg-blue-500 rounded-xl flex items-center justify-center shadow-md flex-shrink-0">
-                      <span className="text-2xl">🎧</span>
+                <div className="bg-white rounded-xl sm:rounded-2xl p-3 sm:p-5 shadow-md border border-blue-100">
+                  <div className="flex items-start gap-3 sm:gap-4">
+                    <div className="w-10 h-10 sm:w-12 sm:h-12 bg-blue-500 rounded-lg sm:rounded-xl flex items-center justify-center shadow-md flex-shrink-0">
+                      <span className="text-xl sm:text-2xl">🎧</span>
                     </div>
                     <div>
-                      <p className="font-bold text-gray-900 text-base mb-1">Mode 1: Listening</p>
-                      <p className="text-sm text-gray-600">Hear the audio and choose the correct word.</p>
-                    </div>
-                  </div>
-                </div>
-                
-                <div className="bg-white rounded-2xl p-5 shadow-md border border-green-100 hover:shadow-lg transition-shadow">
-                  <div className="flex items-start gap-4">
-                    <div className="w-12 h-12 bg-green-500 rounded-xl flex items-center justify-center shadow-md flex-shrink-0">
-                      <span className="text-2xl">📖</span>
-                    </div>
-                    <div>
-                      <p className="font-bold text-gray-900 text-base mb-1">Mode 2: Meaning</p>
-                      <p className="text-sm text-gray-600">See a slang word and guess its meaning.</p>
+                      <p className="font-bold text-gray-900 text-sm sm:text-base mb-1">Mode 1: Listening</p>
+                      <p className="text-xs sm:text-sm text-gray-600">Hear the audio and choose the correct word.</p>
                     </div>
                   </div>
                 </div>
                 
-                <div className="bg-white rounded-2xl p-5 shadow-md border border-red-100 hover:shadow-lg transition-shadow">
-                  <div className="flex items-start gap-4">
-                    <div className="w-12 h-12 bg-red-500 rounded-xl flex items-center justify-center shadow-md flex-shrink-0">
-                      <FaHeart className="text-white text-xl" />
+                <div className="bg-white rounded-xl sm:rounded-2xl p-3 sm:p-5 shadow-md border border-green-100">
+                  <div className="flex items-start gap-3 sm:gap-4">
+                    <div className="w-10 h-10 sm:w-12 sm:h-12 bg-green-500 rounded-lg sm:rounded-xl flex items-center justify-center shadow-md flex-shrink-0">
+                      <span className="text-xl sm:text-2xl">📖</span>
                     </div>
                     <div>
-                      <p className="font-bold text-gray-900 text-base mb-1">3 Lives</p>
-                      <p className="text-sm text-gray-600">Don't lose them all!</p>
+                      <p className="font-bold text-gray-900 text-sm sm:text-base mb-1">Mode 2: Meaning</p>
+                      <p className="text-xs sm:text-sm text-gray-600">See a slang word and guess its meaning.</p>
+                    </div>
+                  </div>
+                </div>
+                
+                <div className="bg-white rounded-xl sm:rounded-2xl p-3 sm:p-5 shadow-md border border-red-100">
+                  <div className="flex items-start gap-3 sm:gap-4">
+                    <div className="w-10 h-10 sm:w-12 sm:h-12 bg-red-500 rounded-lg sm:rounded-xl flex items-center justify-center shadow-md flex-shrink-0">
+                      <FaHeart className="text-white text-base sm:text-xl" />
+                    </div>
+                    <div>
+                      <p className="font-bold text-gray-900 text-sm sm:text-base mb-1">3 Lives</p>
+                      <p className="text-xs sm:text-sm text-gray-600">Don't lose them all!</p>
                     </div>
                   </div>
                 </div>
               </div>
               
               {/* Right Column - Achievement Levels */}
-              <div className="space-y-4">
-                <div className="flex items-center gap-3 mb-2">
-                  <div className="w-10 h-10 bg-yellow-500 rounded-xl flex items-center justify-center shadow-lg">
-                    <span className="text-white text-lg">🏆</span>
+              <div className="space-y-3 sm:space-y-4">
+                <div className="flex items-center gap-2 sm:gap-3 mb-2">
+                  <div className="w-8 h-8 sm:w-10 sm:h-10 bg-yellow-500 rounded-lg sm:rounded-xl flex items-center justify-center shadow-lg">
+                    <span className="text-white text-base sm:text-lg">🏆</span>
                   </div>
-                  <h3 className="text-lg font-black text-gray-900 uppercase">Your Goal</h3>
+                  <h3 className="text-base sm:text-lg font-black text-gray-900 uppercase">Your Goal</h3>
                 </div>
                 
                 {/* Bronze Level */}
-                <div className="bg-white rounded-2xl p-5 shadow-md border-2 border-orange-200 hover:shadow-lg hover:scale-105 transition-all">
-                  <div className="flex items-center justify-between">
-                    <div className="flex items-center gap-4">
-                      <div className="w-16 h-16 bg-gradient-to-br from-orange-400 to-orange-600 rounded-2xl flex items-center justify-center shadow-lg">
-                        <span className="text-4xl">🥉</span>
+                <div className="bg-white rounded-xl sm:rounded-2xl p-3 sm:p-5 shadow-md border-2 border-orange-200">
+                  <div className="flex items-center justify-between gap-2">
+                    <div className="flex items-center gap-2 sm:gap-4">
+                      <div className="w-12 h-12 sm:w-16 sm:h-16 bg-gradient-to-br from-orange-400 to-orange-600 rounded-xl sm:rounded-2xl flex items-center justify-center shadow-lg flex-shrink-0">
+                        <span className="text-2xl sm:text-4xl">🥉</span>
                       </div>
                       <div>
-                        <p className="font-black text-gray-900 text-lg">Turista Novato</p>
-                        <p className="text-sm text-gray-600">Newbie Tourist</p>
+                        <p className="font-black text-gray-900 text-sm sm:text-lg">Turista Novato</p>
+                        <p className="text-xs sm:text-sm text-gray-600">Newbie Tourist</p>
                       </div>
                     </div>
-                    <span className="text-lg font-black text-orange-600">0-4</span>
+                    <span className="text-base sm:text-lg font-black text-orange-600">0-4</span>
                   </div>
                 </div>
                 
                 {/* Silver Level */}
-                <div className="bg-white rounded-2xl p-5 shadow-md border-2 border-gray-300 hover:shadow-lg hover:scale-105 transition-all">
-                  <div className="flex items-center justify-between">
-                    <div className="flex items-center gap-4">
-                      <div className="w-16 h-16 bg-gradient-to-br from-gray-300 to-gray-500 rounded-2xl flex items-center justify-center shadow-lg">
-                        <span className="text-4xl">🥈</span>
+                <div className="bg-white rounded-xl sm:rounded-2xl p-3 sm:p-5 shadow-md border-2 border-gray-300">
+                  <div className="flex items-center justify-between gap-2">
+                    <div className="flex items-center gap-2 sm:gap-4">
+                      <div className="w-12 h-12 sm:w-16 sm:h-16 bg-gradient-to-br from-gray-300 to-gray-500 rounded-xl sm:rounded-2xl flex items-center justify-center shadow-lg flex-shrink-0">
+                        <span className="text-2xl sm:text-4xl">🥈</span>
                       </div>
                       <div>
-                        <p className="font-black text-gray-900 text-lg">Casi Ecuatoriano</p>
-                        <p className="text-sm text-gray-600">Almost Local</p>
+                        <p className="font-black text-gray-900 text-sm sm:text-lg">Casi Ecuatoriano</p>
+                        <p className="text-xs sm:text-sm text-gray-600">Almost Local</p>
                       </div>
                     </div>
-                    <span className="text-lg font-black text-gray-600">5-14</span>
+                    <span className="text-base sm:text-lg font-black text-gray-600">5-14</span>
                   </div>
                 </div>
                 
                 {/* Gold Level - Destacado */}
-                <div className="relative bg-gradient-to-br from-yellow-200 via-yellow-300 to-yellow-400 rounded-2xl p-5 shadow-xl border-3 border-yellow-500 hover:shadow-2xl hover:scale-105 transition-all overflow-hidden">
+                <div className="relative bg-gradient-to-br from-yellow-200 via-yellow-300 to-yellow-400 rounded-xl sm:rounded-2xl p-3 sm:p-5 shadow-xl border-2 sm:border-3 border-yellow-500 overflow-hidden">
                   <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/30 to-transparent animate-shimmer-fast"></div>
-                  <div className="flex items-center justify-between relative z-10">
-                    <div className="flex items-center gap-4">
-                      <div className="w-16 h-16 bg-gradient-to-br from-yellow-400 to-yellow-600 rounded-2xl flex items-center justify-center shadow-2xl">
-                        <span className="text-4xl drop-shadow-lg">🥇</span>
+                  <div className="flex items-center justify-between gap-2 relative z-10">
+                    <div className="flex items-center gap-2 sm:gap-4">
+                      <div className="w-12 h-12 sm:w-16 sm:h-16 bg-gradient-to-br from-yellow-400 to-yellow-600 rounded-xl sm:rounded-2xl flex items-center justify-center shadow-2xl flex-shrink-0">
+                        <span className="text-2xl sm:text-4xl drop-shadow-lg">🥇</span>
                       </div>
                       <div>
-                        <p className="font-black text-yellow-900 text-lg">¡Todo un Ñaño!</p>
-                        <p className="text-sm text-yellow-800 font-semibold">True Ecuadorian!</p>
+                        <p className="font-black text-yellow-900 text-sm sm:text-lg">¡Todo un Ñaño!</p>
+                        <p className="text-xs sm:text-sm text-yellow-800 font-semibold">True Ecuadorian!</p>
                       </div>
                     </div>
-                    <span className="text-lg font-black text-yellow-800">15+</span>
+                    <span className="text-base sm:text-lg font-black text-yellow-800">15+</span>
                   </div>
                 </div>
               </div>
@@ -661,20 +730,21 @@ export const HomePage = () => {
             </div>
             
             {/* Footer Buttons - Siempre Visible */}
-            <div className="px-8 py-6 bg-white border-t border-gray-200 flex gap-4 flex-shrink-0">
+            <div className="px-4 py-3 sm:px-8 sm:py-6 bg-white border-t border-gray-200 flex gap-2 sm:gap-4 flex-shrink-0">
               <button 
                 onClick={handleStartGame}
-                className="flex-1 group relative px-8 py-5 bg-gradient-to-r from-green-500 via-emerald-500 to-teal-500 hover:from-green-600 hover:via-emerald-600 hover:to-teal-600 text-white rounded-2xl font-black text-xl shadow-xl hover:shadow-2xl transform hover:scale-105 active:scale-95 transition-all overflow-hidden"
+                className="flex-1 group relative px-4 py-3 sm:px-8 sm:py-5 bg-gradient-to-r from-green-500 via-yellow-500 to-blue-500 hover:from-green-600 hover:via-yellow-600 hover:to-blue-600 text-white rounded-xl sm:rounded-2xl font-black text-base sm:text-xl shadow-xl hover:shadow-2xl transform hover:scale-105 active:scale-95 transition-all overflow-hidden"
               >
                 <div className="absolute inset-0 bg-white/20 opacity-0 group-hover:opacity-100 transition-opacity"></div>
-                <div className="relative flex items-center justify-center gap-3">
-                  <FaGamepad className="text-2xl" />
-                  <span>Start Playing</span>
+                <div className="relative flex items-center justify-center gap-2 sm:gap-3">
+                  <FaGamepad className="text-xl sm:text-2xl" />
+                  <span className="hidden xs:inline">Start Playing</span>
+                  <span className="xs:hidden">Play</span>
                 </div>
               </button>
               <button 
                 onClick={() => setOpenGameModal(false)}
-                className="px-8 py-5 bg-gray-300 hover:bg-gray-400 text-gray-800 rounded-2xl font-bold text-lg transition-all transform hover:scale-105 active:scale-95 shadow-lg"
+                className="px-4 py-3 sm:px-8 sm:py-5 bg-gray-300 hover:bg-gray-400 text-gray-800 rounded-xl sm:rounded-2xl font-bold text-sm sm:text-lg transition-all transform hover:scale-105 active:scale-95 shadow-lg"
               >
                 Cancel
               </button>

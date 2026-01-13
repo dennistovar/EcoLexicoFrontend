@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Card, Button, Badge } from 'flowbite-react';
 import { CreateWordForm } from '../components/CreateWordForm';
-import axios from 'axios';
+import api from '../services/api';
 
 // Tipos
 interface Word {
@@ -51,7 +51,8 @@ export const AdminDashboard = () => {
     // Verificar que el usuario sea administrador
     if (userStr) {
       const user = JSON.parse(userStr);
-      if (!user.esAdmin && user.role !== 'admin') {
+      // ✅ Verificar el campo 'rol' (español) que viene del backend
+      if (user.rol !== 'admin') {
         alert('Access denied. Admin privileges required.');
         navigate('/home');
       }
@@ -71,8 +72,7 @@ export const AdminDashboard = () => {
   const fetchWords = async () => {
     try {
       setLoading(true);
-      const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:5000';
-      const response = await axios.get(`${API_URL}/api/words`);
+      const response = await api.get('/words');
       setWords(response.data);
     } catch (error) {
       console.error('Error loading words:', error);
@@ -113,12 +113,7 @@ export const AdminDashboard = () => {
 
     setDeleting(true);
     try {
-      const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:5000';
-      const token = localStorage.getItem('token');
-      
-      await axios.delete(`${API_URL}/api/words/${wordToDelete.id}`, {
-        headers: { Authorization: `Bearer ${token}` }
-      });
+      await api.delete(`/words/${wordToDelete.id}`);
 
       // Actualizar lista local
       setWords(words.filter(w => w.id !== wordToDelete.id));

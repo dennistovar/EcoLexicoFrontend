@@ -1,7 +1,7 @@
 import { useState, useEffect } from "react";
 import { Button, Label, TextInput, Textarea, FileInput, Select } from "flowbite-react";
 import { uploadAudio } from "../services/storageService";
-import axios from "axios";
+import api from "../services/api";
 
 // Interface para las props
 interface Props {
@@ -46,7 +46,6 @@ export const CreateWordForm = ({ wordToEdit, onSuccess }: Props) => {
 
     setLoading(true);
     try {
-      const API_URL = import.meta.env.VITE_API_URL || "http://localhost:5000";
       let finalAudioUrl = "";
 
       // Lógica de audio: priorizar nuevo archivo, sino mantener existente
@@ -74,17 +73,13 @@ export const CreateWordForm = ({ wordToEdit, onSuccess }: Props) => {
         audio_url: finalAudioUrl
       };
 
-      // Obtener token de autenticación
-      const token = localStorage.getItem('token');
-      const headers = token ? { Authorization: `Bearer ${token}` } : {};
-
       if (wordToEdit) {
         // MODO EDICIÓN: PUT request
-        await axios.put(`${API_URL}/api/words/${wordToEdit.id}`, dataToSend, { headers });
+        await api.put(`/words/${wordToEdit.id}`, dataToSend);
         alert("✅ Word updated successfully!");
       } else {
         // MODO CREACIÓN: POST request
-        await axios.post(`${API_URL}/api/words`, dataToSend, { headers });
+        await api.post('/words', dataToSend);
         alert("✅ Word saved successfully!");
       }
       

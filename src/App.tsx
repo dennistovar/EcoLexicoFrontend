@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { BrowserRouter, Routes, Route, Link, useLocation, Outlet } from 'react-router-dom';
+import { BrowserRouter, Routes, Route, Link, useLocation, Outlet, Navigate } from 'react-router-dom';
 
 // Importamos las páginas (todas usan exportación nombrada)
 import { HomePage } from './pages/HomePage';
@@ -8,6 +8,51 @@ import { LoginPage } from './pages/LoginPage';
 import { AdminDashboard } from './pages/AdminDashboard';
 import { FavoritesPage } from './pages/FavoritesPage';
 import { GamePage } from './pages/GamePage';
+
+// --- COMPONENTE PROTECCIÓN DE RUTAS ---
+interface ProtectedRouteProps {
+  children: React.ReactNode;
+  allowedRoles: string[];
+}
+
+function ProtectedRoute({ children, allowedRoles }: ProtectedRouteProps) {
+  const userString = localStorage.getItem('user');
+  const token = localStorage.getItem('token');
+  
+  // Si no hay token, redirigir al login
+  if (!token) {
+    return <Navigate to="/login" replace />;
+  }
+  
+  // Si hay token pero no hay usuario, redirigir al login
+  if (!userString) {
+    return <Navigate to="/login" replace />;
+  }
+  
+  try {
+    const user = JSON.parse(userString);
+    
+    // Verificar si el usuario tiene un rol permitido
+    if (!allowedRoles.includes(user.rol)) {
+      // Si es admin intentando acceder a ruta de turista, redirigir a admin dashboard
+      if (user.rol === 'admin') {
+        return <Navigate to="/admin/dashboard" replace />;
+      }
+      // Si es turista intentando acceder a ruta de admin, redirigir a home
+      if (user.rol === 'turista') {
+        return <Navigate to="/home" replace />;
+      }
+      // Si no coincide con ningún rol conocido, redirigir al login
+      return <Navigate to="/login" replace />;
+    }
+    
+    // Si el usuario tiene el rol correcto, mostrar el contenido
+    return <>{children}</>;
+  } catch (error) {
+    console.error('Error al parsear usuario:', error);
+    return <Navigate to="/login" replace />;
+  }
+}
 
 // --- LAYOUT PÚBLICO (Con Navbar) ---
 function PublicLayout() {
@@ -28,18 +73,59 @@ function App() {
   return (
     <BrowserRouter>
       <Routes>
-        {/* GRUPO A: Rutas Públicas CON Navbar */}
+        {/* GRUPO A: Rutas Públicas CON Navbar (Protegidas para turistas) */}
         <Route element={<PublicLayout />}>
           <Route path="/" element={<HomePage />} />
-          <Route path="/home" element={<HomePage />} />
-          <Route path="/region/:regionId" element={<RegionPage />} />
-          <Route path="/favorites" element={<FavoritesPage />} />
-          <Route path="/game" element={<GamePage />} />
+          <Route 
+            path="/home" 
+            element={
+              <ProtectedRoute allowedRoles={['turista']}>
+                <HomePage />
+              </ProtectedRoute>
+            } 
+          />
+          <Route 
+            path="/region/:regionId" 
+            element={
+              <ProtectedRoute allowedRoles={['turista']}>
+                <RegionPage />
+              </ProtectedRoute>
+            } 
+          />
+          <Route 
+            path="/favorites" 
+            element={
+              <ProtectedRoute allowedRoles={['turista']}>
+                <FavoritesPage />
+              </ProtectedRoute>
+            } 
+          />
+          <Route 
+            path="/game" 
+            element={
+              <ProtectedRoute allowedRoles={['turista']}>
+                <GamePage />
+              </ProtectedRoute>
+            } 
+          />
         </Route>
 
-        {/* GRUPO B: Rutas SIN Navbar (Login y Admin) */}
+        {/* GRUPO B: Rutas SIN Navbar */}
+        {/* Login - Ruta pública */}
         <Route path="/login" element={<LoginPage />} />
-        <Route path="/admin" element={<AdminDashboard />} />
+        
+        {/* Admin Dashboard - Solo para admins */}
+        <Route 
+          path="/admin/dashboard" 
+          element={
+            <ProtectedRoute allowedRoles={['admin']}>
+              <AdminDashboard />
+            </ProtectedRoute>
+          } 
+        />
+        
+        {/* Redirección de /admin a /admin/dashboard */}
+        <Route path="/admin" element={<Navigate to="/admin/dashboard" replace />} />
         
         {/* Ruta 404 */}
         <Route path="*" element={<NotFound />} />
@@ -56,12 +142,43 @@ function NavbarComponent() {
   const [isLoggedIn, setIsLoggedIn] = useState(false);
   // Estado para el menú móvil
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+  // Estado para controlar la visibilidad del navbar
+  const [isVisible, setIsVisible] = useState(true);
+  const [lastScrollY, setLastScrollY] = useState(0);
 
   // Verificar el token al montar el componente
   useEffect(() => {
     const token = localStorage.getItem('token');
     setIsLoggedIn(!!token);
   }, []);
+
+  // Efecto para manejar el scroll
+  useEffect(() => {
+    const handleScroll = () => {
+      const currentScrollY = window.scrollY;
+      
+      // Si estamos en la parte superior, siempre mostrar
+      if (currentScrollY < 10) {
+        setIsVisible(true);
+      }
+      // Si scrolleamos hacia abajo, ocultar
+      else if (currentScrollY > lastScrollY && currentScrollY > 80) {
+        setIsVisible(false);
+      }
+      // Si scrolleamos hacia arriba, mostrar
+      else if (currentScrollY < lastScrollY) {
+        setIsVisible(true);
+      }
+      
+      setLastScrollY(currentScrollY);
+    };
+
+    window.addEventListener('scroll', handleScroll, { passive: true });
+    
+    return () => {
+      window.removeEventListener('scroll', handleScroll);
+    };
+  }, [lastScrollY]);
 
   // Función para cerrar sesión
   const handleLogout = () => {
@@ -74,7 +191,9 @@ function NavbarComponent() {
   const isActive = (path: string) => location.pathname === path;
 
   return (
-    <nav className="bg-white/95 backdrop-blur-md shadow-lg border-b border-gray-100 sticky top-0 z-50">
+    <nav className={`bg-blue-600 shadow-xl border-b-4 border-yellow-400 sticky top-0 z-50 transition-transform duration-300 ${
+      isVisible ? 'translate-y-0' : '-translate-y-full'
+    }`}>
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex justify-between items-center h-20">
           
@@ -84,15 +203,15 @@ function NavbarComponent() {
             <img 
               src="/img/logo.png" 
               alt="EcoLéxico" 
-              className="w-12 h-12 rounded-xl shadow-lg group-hover:shadow-xl group-hover:scale-110 transition-all duration-300 object-cover"
+              className="w-12 h-12 rounded-xl shadow-lg group-hover:shadow-2xl group-hover:scale-110 transition-all duration-300 object-cover ring-2 ring-yellow-300"
             />
             
             {/* Texto del Logo */}
             <div className="flex flex-col">
-              <span className="text-xl font-black bg-gradient-to-r from-emerald-600 to-teal-600 text-transparent bg-clip-text leading-tight">
+              <span className="text-xl font-black text-white leading-tight drop-shadow-lg">
                 EcoLéxico
               </span>
-              <span className="text-xs text-gray-500 font-medium leading-tight">
+              <span className="text-xs text-yellow-100 font-semibold leading-tight">
                 Ecuadorian Words
               </span>
             </div>
@@ -104,10 +223,10 @@ function NavbarComponent() {
             {/* Link: Explore */}
             <Link 
               to="/" 
-              className={`px-4 py-2 rounded-lg text-sm font-semibold transition-all duration-300 ${
+              className={`px-5 py-2.5 rounded-lg text-sm font-bold transition-all duration-300 ${
                 isActive('/') 
-                  ? 'text-blue-600 bg-gradient-to-r from-blue-50 to-blue-100 shadow-md' 
-                  : 'text-gray-700 hover:text-blue-600 hover:bg-gray-50 hover:shadow-sm'
+                  ? 'text-blue-900 bg-yellow-400 shadow-md' 
+                  : 'text-white hover:text-blue-900 hover:bg-yellow-300'
               }`}
             >
               Explore
@@ -116,7 +235,7 @@ function NavbarComponent() {
             {/* Link: About Ecuador */}
             <a 
               href="/#about" 
-              className="px-4 py-2 rounded-lg text-sm font-semibold transition-all duration-300 text-gray-700 hover:text-teal-600 hover:bg-teal-50 hover:shadow-sm"
+              className="px-5 py-2.5 rounded-lg text-sm font-bold transition-all duration-300 text-white hover:text-blue-900 hover:bg-yellow-300"
             >
               About Ecuador
             </a>
@@ -125,10 +244,10 @@ function NavbarComponent() {
             {isLoggedIn && (
               <Link 
                 to="/game" 
-                className={`px-4 py-2 rounded-lg text-sm font-semibold transition-all duration-300 flex items-center gap-2 ${
+                className={`px-5 py-2.5 rounded-lg text-sm font-bold transition-all duration-300 flex items-center gap-2 ${
                   isActive('/game') 
-                    ? 'text-white bg-gradient-to-r from-purple-600 to-pink-600 shadow-lg' 
-                    : 'text-gray-700 hover:text-purple-600 hover:bg-purple-50 hover:shadow-sm'
+                    ? 'text-blue-900 bg-yellow-400 shadow-md' 
+                    : 'text-white hover:text-blue-900 hover:bg-yellow-300'
                 }`}
               >
                 <span className="text-lg">🎮</span>
@@ -139,10 +258,10 @@ function NavbarComponent() {
             {/* Link: Favorites (con icono de corazón) */}
             <Link 
               to="/favorites" 
-              className={`px-4 py-2 rounded-lg text-sm font-semibold transition-all duration-300 flex items-center gap-2 ${
+              className={`px-5 py-2.5 rounded-lg text-sm font-bold transition-all duration-300 flex items-center gap-2 ${
                 isActive('/favorites') 
-                  ? 'text-red-600 bg-gradient-to-r from-red-50 to-pink-50 shadow-md' 
-                  : 'text-gray-700 hover:text-red-600 hover:bg-red-50 hover:shadow-sm'
+                    ? 'text-blue-900 bg-yellow-400 shadow-md' 
+                    : 'text-white hover:text-blue-900 hover:bg-yellow-300'
               }`}
             >
               <svg 
@@ -165,7 +284,7 @@ function NavbarComponent() {
             {isLoggedIn ? (
               <button
                 onClick={handleLogout}
-                className="px-4 py-2 rounded-lg text-sm font-semibold transition-all duration-300 text-white bg-gradient-to-r from-red-500 to-red-600 hover:from-red-600 hover:to-red-700 hover:shadow-lg flex items-center gap-2"
+                className="px-4 py-2 rounded-lg text-sm font-bold transition-all duration-300 text-white bg-red-600 hover:bg-red-700 hover:shadow-lg flex items-center gap-2"
               >
                 <svg 
                   className="w-5 h-5" 

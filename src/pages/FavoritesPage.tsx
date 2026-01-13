@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { FaHeart, FaRegHeart, FaHeadphones } from 'react-icons/fa';
 import { WordCard } from '../components/WordCard';
-import axios from 'axios';
+import api from '../services/api';
 
 interface Word {
   id: number;
@@ -31,12 +31,7 @@ export const FavoritesPage = () => {
           return;
         }
 
-        const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:5000';
-        const response = await axios.get(`${API_URL}/api/favorites`, {
-          headers: {
-            'Authorization': `Bearer ${token}`
-          }
-        });
+        const response = await api.get('/favorites');
 
         setFavorites(response.data);
       } catch (err: any) {
@@ -65,15 +60,9 @@ export const FavoritesPage = () => {
         navigate('/login');
         return;
       }
-
-      const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:5000';
       
       // Remover de favoritos
-      await axios.delete(`${API_URL}/api/favorites/${wordId}`, {
-        headers: {
-          'Authorization': `Bearer ${token}`
-        }
-      });
+      await api.delete(`/api/favorites/${wordId}`);
 
       // Actualizar estado local
       setFavorites(favorites.filter(word => word.id !== wordId));
@@ -86,7 +75,7 @@ export const FavoritesPage = () => {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-b from-yellow-50 to-white pt-10">
+    <div className="min-h-screen bg-gradient-to-br from-yellow-50 via-blue-50 to-green-50 pt-10">
       
       {/* --- CONTENEDOR PRINCIPAL --- */}
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
@@ -94,20 +83,20 @@ export const FavoritesPage = () => {
         {/* --- ENCABEZADO CENTRADO --- */}
         <div className="text-center mb-12">
           
-          {/* Icono Principal (Círculo Rojo con Corazón) */}
+          {/* Icono Principal (Círculo con Colores Ecuatorianos) */}
           <div className="flex justify-center mb-6">
-            <div className="w-20 h-20 bg-red-500 rounded-full flex items-center justify-center shadow-lg">
-              <FaHeart className="text-white text-4xl" />
+            <div className="w-24 h-24 bg-gradient-to-br from-yellow-400 via-blue-500 to-red-500 rounded-2xl flex items-center justify-center shadow-2xl shadow-blue-500/50 transform hover:scale-110 transition-all duration-300">
+              <FaHeart className="text-white text-5xl drop-shadow-lg" />
             </div>
           </div>
 
           {/* Título */}
-          <h1 className="text-4xl font-bold text-gray-800 mb-2">
+          <h1 className="text-5xl font-black bg-gradient-to-r from-yellow-600 via-blue-600 to-red-600 text-transparent bg-clip-text mb-3">
             Your Favorite Words
           </h1>
 
           {/* Subtítulo */}
-          <p className="text-gray-600 mt-2">
+          <p className="text-gray-700 text-lg mt-2 font-semibold">
             Keep track of the Ecuadorian words you love the most
           </p>
 
@@ -137,23 +126,23 @@ export const FavoritesPage = () => {
           <div className="flex flex-col items-center justify-center mt-20">
             
             {/* Icono de Corazón Vacío */}
-            <div className="w-24 h-24 bg-gray-100 rounded-full flex items-center justify-center mb-6">
-              <FaRegHeart className="text-gray-400 text-5xl" />
+            <div className="w-32 h-32 bg-gradient-to-br from-yellow-100 via-blue-100 to-red-100 rounded-3xl flex items-center justify-center mb-6 shadow-xl border-2 border-yellow-400">
+              <FaRegHeart className="text-blue-600 text-6xl" />
             </div>
 
             {/* Título Estado Vacío */}
-            <h2 className="text-xl font-bold text-gray-800 mb-3">
+            <h2 className="text-2xl font-bold bg-gradient-to-r from-yellow-600 via-blue-600 to-red-600 text-transparent bg-clip-text mb-3">
               No favorites yet
             </h2>
 
             {/* Texto Descriptivo */}
-            <p className="text-gray-600 text-center max-w-md mb-8">
+            <p className="text-gray-700 text-center max-w-md mb-8 text-lg font-medium">
               Start exploring words from different regions and save your favorites to access them quickly here.
             </p>
 
             {/* Botón para Explorar */}
             <Link to="/">
-              <button className="px-8 py-3 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors font-medium shadow-md">
+              <button className="px-10 py-4 bg-gradient-to-r from-yellow-400 via-blue-500 to-red-500 text-white rounded-xl hover:from-yellow-500 hover:via-blue-600 hover:to-red-600 transition-all duration-300 font-bold shadow-2xl shadow-blue-500/50 hover:scale-105 transform">
                 Explore Words
               </button>
             </Link>

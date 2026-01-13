@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import { Card, Label, TextInput, Button, Alert } from 'flowbite-react';
-import axios from 'axios';
+import api from '../services/api';
 
 export const AdminLoginPage = () => {
   const navigate = useNavigate();
@@ -19,10 +19,8 @@ export const AdminLoginPage = () => {
     setLoading(true);
 
     try {
-      const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:5000';
-      
       // POST con propiedad esAdmin: true
-      const response = await axios.post(`${API_URL}/api/auth/login`, {
+      const response = await api.post('/auth/login', {
         nombre_usuario: formData.nombre_usuario,
         clave: formData.clave,
         esAdmin: true

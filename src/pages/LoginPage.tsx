@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import { Card, Label, TextInput, Button, Alert } from 'flowbite-react';
-import axios from 'axios';
+import api from '../services/api';
 
 export const LoginPage = () => {
   const navigate = useNavigate();
@@ -21,11 +21,9 @@ export const LoginPage = () => {
     setLoading(true);
 
     try {
-      const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:5000';
-      
       if (isRegistering) {
         // Registro de nuevo usuario
-        const response = await axios.post(`${API_URL}/api/auth/register`, {
+        const response = await api.post('/auth/register', {
           nombre_usuario: formData.nombre_usuario,
           email: formData.email,
           clave: formData.clave
@@ -36,23 +34,26 @@ export const LoginPage = () => {
         // Debugging: Ver qué datos llegan del backend
         console.log('Respuesta Backend (Registro):', response.data);
         console.log('Usuario completo:', user);
-        console.log('¿Es Admin?', user.esAdmin, 'Role:', user.role);
+        console.log('Rol del usuario:', user.rol);
         
         // Guardar token y usuario
         localStorage.setItem('token', token);
         localStorage.setItem('user', JSON.stringify(user));
         
+        // Marcar que el usuario acaba de iniciar sesión para mostrar el mensaje de bienvenida
+        sessionStorage.setItem('justLoggedIn', 'true');
+        
         // Redirigir según el rol
-        if (user.esAdmin || user.role === 'admin') {
-          console.log('✅ Redirigiendo a /admin');
-          navigate('/admin');
-        } else {
+        if (user.rol === 'admin') {
+          console.log('✅ Redirigiendo a /admin/dashboard');
+          navigate('/admin/dashboard');
+        } else if (user.rol === 'turista') {
           console.log('✅ Redirigiendo a /home');
           navigate('/home');
         }
       } else {
         // Login de usuario existente
-        const response = await axios.post(`${API_URL}/api/auth/login`, {
+        const response = await api.post('/auth/login', {
           nombre_usuario: formData.nombre_usuario || formData.email,
           clave: formData.clave
         });
@@ -62,17 +63,20 @@ export const LoginPage = () => {
         // Debugging: Ver qué datos llegan del backend
         console.log('Respuesta Backend (Login):', response.data);
         console.log('Usuario completo:', user);
-        console.log('¿Es Admin?', user.esAdmin, 'Role:', user.role);
+        console.log('Rol del usuario:', user.rol);
         
         // Guardar token y usuario
         localStorage.setItem('token', token);
         localStorage.setItem('user', JSON.stringify(user));
         
+        // Marcar que el usuario acaba de iniciar sesión para mostrar el mensaje de bienvenida
+        sessionStorage.setItem('justLoggedIn', 'true');
+        
         // Redirigir según el rol
-        if (user.esAdmin || user.role === 'admin') {
-          console.log('✅ Redirigiendo a /admin');
-          navigate('/admin');
-        } else {
+        if (user.rol === 'admin') {
+          console.log('✅ Redirigiendo a /admin/dashboard');
+          navigate('/admin/dashboard');
+        } else if (user.rol === 'turista') {
           console.log('✅ Redirigiendo a /home');
           navigate('/home');
         }
@@ -96,11 +100,11 @@ export const LoginPage = () => {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-emerald-50 via-teal-50 to-green-50 flex items-center justify-center py-12 px-4 sm:px-6 lg:px-8 relative overflow-hidden">
+    <div className="min-h-screen bg-gradient-to-br from-blue-50 via-yellow-50 to-green-50 flex items-center justify-center py-12 px-4 sm:px-6 lg:px-8 relative overflow-hidden">
       {/* Decorative Elements */}
       <div className="absolute inset-0 opacity-20">
-        <div className="absolute top-10 left-10 w-64 h-64 bg-emerald-400 rounded-full blur-3xl animate-pulse"></div>
-        <div className="absolute bottom-10 right-10 w-80 h-80 bg-teal-400 rounded-full blur-3xl animate-pulse" style={{animationDelay: '1s'}}></div>
+        <div className="absolute top-10 left-10 w-64 h-64 bg-blue-400 rounded-full blur-3xl animate-pulse"></div>
+        <div className="absolute bottom-10 right-10 w-80 h-80 bg-yellow-400 rounded-full blur-3xl animate-pulse" style={{animationDelay: '1s'}}></div>
         <div className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 w-96 h-96 bg-green-400 rounded-full blur-3xl"></div>
       </div>
       
@@ -117,10 +121,10 @@ export const LoginPage = () => {
               />
             </div>
           </Link>
-          <h2 className="text-4xl font-black bg-gradient-to-r from-emerald-600 via-teal-600 to-green-600 text-transparent bg-clip-text mb-3">
+          <h2 className="text-4xl font-black bg-gradient-to-r from-blue-600 via-yellow-600 to-green-600 text-transparent bg-clip-text mb-3">
             {isRegistering ? 'Create Account' : 'Welcome Back'}
           </h2>
-          <p className="text-gray-600 text-lg font-medium">
+          <p className="text-gray-700 text-lg font-semibold">
             {isRegistering ? 'Join our community of language learners' : 'Sign in to continue learning'}
           </p>
         </div>
@@ -140,7 +144,7 @@ export const LoginPage = () => {
             <div className="group">
               <label className="block mb-3">
                 <span className="text-sm font-black text-gray-700 uppercase tracking-wide flex items-center gap-2 mb-2">
-                  <span className="w-8 h-8 bg-gradient-to-br from-emerald-500 to-teal-500 rounded-lg flex items-center justify-center shadow-md">
+                  <span className="w-8 h-8 bg-gradient-to-br from-blue-500 to-blue-600 rounded-lg flex items-center justify-center shadow-md">
                     <svg className="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
                     </svg>
@@ -155,7 +159,7 @@ export const LoginPage = () => {
                   value={formData.nombre_usuario}
                   onChange={(e) => setFormData({ ...formData, nombre_usuario: e.target.value })}
                   disabled={loading}
-                  className="w-full px-4 py-3.5 text-base font-semibold text-gray-800 bg-white border-3 border-gray-200 rounded-xl focus:border-emerald-500 focus:ring-4 focus:ring-emerald-100 transition-all duration-300 placeholder:text-gray-400 placeholder:font-normal hover:border-gray-300 disabled:bg-gray-100 disabled:cursor-not-allowed"
+                  className="w-full px-4 py-3.5 text-base font-semibold text-gray-800 bg-white border-3 border-gray-200 rounded-xl focus:border-blue-500 focus:ring-4 focus:ring-blue-100 transition-all duration-300 placeholder:text-gray-400 placeholder:font-normal hover:border-gray-300 disabled:bg-gray-100 disabled:cursor-not-allowed"
                 />
               </label>
             </div>
@@ -165,7 +169,7 @@ export const LoginPage = () => {
               <div className="group">
                 <label className="block mb-3">
                   <span className="text-sm font-black text-gray-700 uppercase tracking-wide flex items-center gap-2 mb-2">
-                    <span className="w-8 h-8 bg-gradient-to-br from-yellow-500 to-orange-500 rounded-lg flex items-center justify-center shadow-md">
+                    <span className="w-8 h-8 bg-gradient-to-br from-yellow-500 to-yellow-600 rounded-lg flex items-center justify-center shadow-md">
                       <svg className="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
                       </svg>
@@ -190,7 +194,7 @@ export const LoginPage = () => {
             <div className="group">
               <label className="block mb-3">
                 <span className="text-sm font-black text-gray-700 uppercase tracking-wide flex items-center gap-2 mb-2">
-                  <span className="w-8 h-8 bg-gradient-to-br from-teal-500 to-cyan-500 rounded-lg flex items-center justify-center shadow-md">
+                  <span className="w-8 h-8 bg-gradient-to-br from-green-600 to-green-700 rounded-lg flex items-center justify-center shadow-md">
                     <svg className="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
                     </svg>
@@ -205,7 +209,7 @@ export const LoginPage = () => {
                   value={formData.clave}
                   onChange={(e) => setFormData({ ...formData, clave: e.target.value })}
                   disabled={loading}
-                  className="w-full px-4 py-3.5 text-base font-semibold text-gray-800 bg-white border-3 border-gray-200 rounded-xl focus:border-teal-500 focus:ring-4 focus:ring-teal-100 transition-all duration-300 placeholder:text-gray-400 placeholder:font-normal hover:border-gray-300 disabled:bg-gray-100 disabled:cursor-not-allowed"
+                  className="w-full px-4 py-3.5 text-base font-semibold text-gray-800 bg-white border-3 border-gray-200 rounded-xl focus:border-green-600 focus:ring-4 focus:ring-green-100 transition-all duration-300 placeholder:text-gray-400 placeholder:font-normal hover:border-gray-300 disabled:bg-gray-100 disabled:cursor-not-allowed"
                 />
               </label>
             </div>
@@ -215,7 +219,7 @@ export const LoginPage = () => {
               <button
                 type="submit"
                 disabled={loading}
-                className="w-full px-6 py-4 bg-gradient-to-r from-emerald-600 via-teal-600 to-green-600 hover:from-emerald-700 hover:via-teal-700 hover:to-green-700 disabled:from-gray-400 disabled:to-gray-500 text-white font-black text-lg rounded-xl shadow-xl hover:shadow-2xl transition-all duration-300 transform hover:scale-105 disabled:scale-100 disabled:cursor-not-allowed uppercase tracking-wide"
+                className="w-full px-6 py-4 bg-gradient-to-r from-blue-600 via-yellow-500 to-green-600 hover:from-blue-700 hover:via-yellow-600 hover:to-green-700 disabled:from-gray-400 disabled:to-gray-500 text-white font-black text-lg rounded-xl shadow-xl hover:shadow-2xl transition-all duration-300 transform hover:scale-105 disabled:scale-100 disabled:cursor-not-allowed uppercase tracking-wide"
               >
                 {loading ? (
                   <div className="flex items-center justify-center gap-3">
@@ -245,7 +249,7 @@ export const LoginPage = () => {
                   setError(null);
                   setFormData({ nombre_usuario: '', email: '', clave: '' });
                 }}
-                className="text-transparent bg-clip-text bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-700 hover:to-teal-700 font-bold text-base transition-all duration-300 hover:scale-105 inline-block"
+                className="text-transparent bg-clip-text bg-gradient-to-r from-blue-600 to-green-600 hover:from-blue-700 hover:to-green-700 font-bold text-base transition-all duration-300 hover:scale-105 inline-block"
               >
                 {isRegistering ? '¿Already have an account? Log in' : "Don't have an account? Sign up"}
               </button>
@@ -257,12 +261,12 @@ export const LoginPage = () => {
         {/* Info Box */}
         <div className="mt-8 bg-gradient-to-br from-white/90 to-white/70 backdrop-blur-lg rounded-2xl shadow-xl p-6 border border-white/30">
           <div className="flex items-start gap-3">
-            <div className="w-10 h-10 bg-gradient-to-br from-emerald-500 to-green-500 rounded-xl flex items-center justify-center flex-shrink-0 shadow-lg">
+            <div className="w-10 h-10 bg-gradient-to-br from-yellow-500 to-yellow-600 rounded-xl flex items-center justify-center flex-shrink-0 shadow-lg">
               <span className="text-2xl">🌎</span>
             </div>
             <div>
               <h3 className="font-black text-gray-800 mb-1">Universal Access Point</h3>
-              <p className="text-sm text-gray-600 leading-relaxed">
+              <p className="text-sm text-gray-600 leading-relaxed font-medium">
                 One login for everyone. Whether you're a learner exploring Ecuadorian Spanish or an admin managing content, this is your entry point.
               </p>
             </div>
