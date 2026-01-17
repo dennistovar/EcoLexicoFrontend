@@ -63,7 +63,7 @@ export const RegionPage = () => {
       case 'oriente':
         return ['All', 'Nature', 'Traditions', 'Gastronomy', 'Daily Life'];
       case 'sierra':
-        return ['All', 'Expressions', 'Food', 'Informal', 'Affirmations'];
+        return ['All', 'Expressions', 'Food', 'Greetings', 'Party', 'Conflicts'];
       default:
         return ['All'];
     }
